@@ -14,7 +14,7 @@ namespace api_outlook_calendar.Controllers
         string tokensFile = "Files/tokens.json";
 
         [HttpGet]
-        public JObject Callback(string code, string state, string error)
+        public string Callback(string code, string state, string error)
         {
 
             var finalResponse = "{}";
@@ -36,14 +36,12 @@ namespace api_outlook_calendar.Controllers
                 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    finalResponse = response.Content;
                     System.IO.File.WriteAllText(tokensFile, response.Content);
+                    finalResponse = "Token and RefreshToken generated and saved successfully";
                 }
             }
 
-            JObject jsonObject = JObject.Parse(finalResponse);
-
-            return jsonObject;
+            return finalResponse;
         }
     }
 }
