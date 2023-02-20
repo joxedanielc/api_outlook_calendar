@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using static api_outlook_calendar.EventClass;
 using System.Text.Json;
-using System.Dynamic;
-using System.Xml.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,7 +12,7 @@ namespace api_outlook_calendar.Controllers
     {
         string tokensFile = "Files/tokens.json";
 
-        // GET api/events
+        // GET
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(201)]
@@ -52,19 +44,37 @@ namespace api_outlook_calendar.Controllers
             return finalResponse.ToArray<EventDataClass>();
         }
 
-        // GET api/events/5
+        // GET
         [HttpGet("{id}")]
         [Produces("application/json")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public EventClass Get(int id)
+        public EventDataClass Get(string id)
         {
-            var response = new EventClass();
+            var finalResponse = new EventDataClass();
+            JObject tokens = JObject.Parse(System.IO.File.ReadAllText(tokensFile));
 
-            return response;
+            RestRequest restRequest = new RestRequest();
+
+            restRequest.AddHeader("Authorization", "Bearer " + tokens["access_token"].ToString());
+            restRequest.AddHeader("Content-Type", "application/json");
+
+            RestClient restClient = new RestClient($"https://graph.microsoft.com/v1.0/me/calendar/events/{id}");
+            var response = restClient.Get(restRequest);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var content = response.Content;
+                EventDataClass? responseValue =
+                JsonSerializer.Deserialize<EventDataClass>(content);
+                finalResponse = responseValue;
+
+            }
+
+            return finalResponse;
         }
 
-        // POST api/events
+        // POST
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
@@ -78,9 +88,7 @@ namespace api_outlook_calendar.Controllers
 
             restRequest.AddHeader("Authorization", "Bearer " + tokens["access_token"].ToString());
             restRequest.AddHeader("Content-Type", "application/json");
-            //restRequest.AddParameter("application/json", newEvent);
             restRequest.AddJsonBody(newEvent);
-
 
             RestClient restClient = new RestClient("https://graph.microsoft.com/v1.0/me/calendar/events");
             var response = restClient.Post(restRequest);
@@ -88,28 +96,79 @@ namespace api_outlook_calendar.Controllers
             if (response.StatusCode == System.Net.HttpStatusCode.Created)
             {
                 var content = response.Content;
-                EventDataClass? weatherForecast =
+                EventDataClass? responseValue =
                 JsonSerializer.Deserialize<EventDataClass>(content);
-                finalResponse = weatherForecast;
+                finalResponse = responseValue;
             }
 
             return finalResponse;
         }
 
-        // PUT api/events/5
+        // PUT
         [HttpPut("{id}")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public void Put([FromBody] EventClass updatedEvent)
+        public Tuple<EventDataClass?, string?> Put(string id, [FromBody] EventClass updatedEvent)
         {
+            JObject tokens = JObject.Parse(System.IO.File.ReadAllText(tokensFile));
+
+            RestRequest restRequest = new RestRequest();
+
+            string errorResponse = "";
+            var eventDataResponse = new EventDataClass();
+
+            restRequest.AddHeader("Authorization", "Bearer " + tokens["access_token"].ToString());
+            restRequest.AddHeader("Content-Type", "application/json");
+            //restRequest.AddParameter("application/json", newEvent);
+            restRequest.AddJsonBody(updatedEvent);
+
+
+            RestClient restClient = new RestClient($"https://graph.microsoft.com/v1.0/me/calendar/events/{id}");
+            var response = restClient.Patch(restRequest);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var content = response.Content;
+                EventDataClass? responseValue =
+                JsonSerializer.Deserialize<EventDataClass>(content);
+                eventDataResponse = responseValue;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                errorResponse = $"The event with id: '{id}' was not found.";
+            }
+
+            return Tuple.Create<EventDataClass?, string?>(eventDataResponse, errorResponse);
         }
 
-        // DELETE api/events/5
+        // DELETE
         [HttpDelete("{id}")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public void Delete()
+        public string Delete(string id)
         {
+            string finalResponse = "";
+            JObject tokens = JObject.Parse(System.IO.File.ReadAllText(tokensFile));
+
+            RestRequest restRequest = new RestRequest();
+
+            restRequest.AddHeader("Authorization", "Bearer " + tokens["access_token"].ToString());
+            restRequest.AddHeader("Content-Type", "application/json");
+
+            RestClient restClient = new RestClient($"https://graph.microsoft.com/v1.0/me/calendar/events/{id}");
+            var response = restClient.Delete(restRequest);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                finalResponse = $"The event with id: '{id}' was deleted.";
+
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                finalResponse = $"The event with id: '{id}' was not found.";
+            }
+
+            return finalResponse;
         }
     }
 }

@@ -5,37 +5,37 @@ namespace api_outlook_calendar
 	{
 		public EventClass()
 		{
-            this.Body = new BodyEvent()
+            this.Body = new BodyEvnt()
             {
                 ContentType = "html"
             };
 
-            this.Start = new EventDateTime()
+            this.Start = new EventDT()
             {
                 TimeZone = "Pacific Standard Time"
             };
 
-            this.End = new EventDateTime()
+            this.End = new EventDT()
             {
                 TimeZone = "Pacific Standard Time"
             };
         }
 
-        public EventDateTime Start { get; set; }
+        public EventDT Start { get; set; }
 
-        public EventDateTime End { get; set; }
+        public EventDT End { get; set; }
 
-        public BodyEvent Body { get; set; }
+        public BodyEvnt Body { get; set; }
 
         public string Subject { get; set; }
 
-        public class BodyEvent
+        public class BodyEvnt
         {
             public string ContentType { get; set; }
             public string Content { get; set; }
         }
 
-        public class EventDateTime
+        public class EventDT
         {
             public DateTime DateTime { get; set; }
             public string TimeZone { get; set; }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 
@@ -12,19 +13,12 @@ namespace api_outlook_calendar.Controllers
         string credentialsFile = "Files/credentials.json";
         
         [HttpGet]
-        public void OauthRedirect()
+        public ActionResult OauthRedirect()
         {
 
             JObject credentials = JObject.Parse(System.IO.File.ReadAllText(credentialsFile));
 
-            var redirectURL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
-                + "client_id=" + credentials["client_id"].ToString()
-                + "&response_type=code"
-                + "&redirect_uri=" + credentials["redirect_url"].ToString()
-                + "&response_mode=query"
-                + "&scope=" + credentials["scopes"].ToString()
-                + "&state=testcalendaroutlook";
-            //return Redirect(redirectURL);
+            var responseUri = "";
 
             RestRequest restRequest = new RestRequest();
             restRequest.AddParameter("client_id", credentials["client_id"].ToString());
@@ -36,7 +30,13 @@ namespace api_outlook_calendar.Controllers
 
 
             RestClient restClient = new RestClient("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?");
-            restClient.Get(restRequest);
+            var response = restClient.Get(restRequest);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                responseUri = response.ResponseUri.ToString();
+            }
+
+            return Redirect(responseUri);
         }
     }
 }

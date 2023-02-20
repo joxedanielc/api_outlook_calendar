@@ -38,10 +38,6 @@ namespace api_outlook_calendar.Controllers
                 finalResponse = response.Content;
                 System.IO.File.WriteAllText(tokensFile, response.Content);
             }
-            else
-            {
-
-            }
 
             var options = new JsonSerializerOptions { WriteIndented = true };
             string jsonString = JsonSerializer.Serialize(finalResponse, options);

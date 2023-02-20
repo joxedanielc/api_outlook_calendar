@@ -14,7 +14,7 @@ namespace api_outlook_calendar.Controllers
         string tokensFile = "Files/tokens.json";
 
         [HttpGet]
-        public string Callback(string code, string state, string error)
+        public JObject Callback(string code, string state, string error)
         {
 
             var finalResponse = "{}";
@@ -41,10 +41,9 @@ namespace api_outlook_calendar.Controllers
                 }
             }
 
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string jsonString = JsonSerializer.Serialize(finalResponse, options);
+            JObject jsonObject = JObject.Parse(finalResponse);
 
-            return jsonString;
+            return jsonObject;
         }
     }
 }
