@@ -1,4 +1,6 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using RestSharp;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
@@ -19,11 +21,10 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsProduction())
 {
+    app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=OAuth}/{action=OauthRedirect}");
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/index.html", "v1");
-    });
 }
 
 app.UseHttpsRedirection();
