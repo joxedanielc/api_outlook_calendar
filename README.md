@@ -13,10 +13,6 @@ Integrate Microsoft Outlook:
 - Microsoft Graph
 - C# .Net 6
 
-## Production Link
-
-[api_outlook_calendar]()
-
 ## Credentials
 
 Please add the credentials created in the [portal azure](https://portal.azure.com/#home) in the following file `api_outlook_calendar/Files/credentials.json`.
